@@ -189,7 +189,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
-  jumpPower: 15
+  jumpPower: 13
   upGravity: 0.8
   downGravity: 1.4
   hangGravity: 0.4

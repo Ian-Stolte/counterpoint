@@ -183,17 +183,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3f1bfc7e446a4089aadb2b0190cc280, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 3.5
+  moveSpeed: 4
   rotationSpeed: 20
   groundCheck: {fileID: 8820092714428594478}
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
-  jumpPower: 20
+  jumpPower: 17
   upGravity: 1.2
-  downGravity: 2
+  downGravity: 1.8
   hangGravity: 0.6
-  hangPoint: 1
+  hangPoint: 2
   grounded: 0
 --- !u!136 &7499783435629719454
 CapsuleCollider:
