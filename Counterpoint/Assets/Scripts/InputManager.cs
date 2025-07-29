@@ -8,23 +8,27 @@ using UnityEngine.InputSystem.LowLevel;
 
 public class InputManager : MonoBehaviour
 {
-    public GameObject player1Prefab;
-    public GameObject player2Prefab;
+    public GameObject player1;
+    public GameObject player2;
     private int playerCount;
 
 
     private void Start()
     {
         var gamepads = Gamepad.all;
-        if (gamepads.Count < 2)
+        Debug.Log("Controllers connected: " + gamepads.Count);
+        if (gamepads.Count == 0)
         {
-            Debug.LogError("Two controllers required!");
+            Debug.LogError("No controllers connected!");
+            Application.Quit();
+            #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+            #endif
             return;
         }
 
         //Pair controller 1 to player 1
-        GameObject p1 = Instantiate(player1Prefab, new Vector3(-2, 1, 0), Quaternion.identity);
-        var p1Controller = p1.GetComponent<Player1Controller>();
+        var p1Controller = player1.GetComponent<Player1Controller>();
         var player1Controls = new PlayerControls();
         player1Controls.Player1.Enable();
 
@@ -34,14 +38,25 @@ public class InputManager : MonoBehaviour
         p1Controller.Initialize(player1Controls);
 
         //Pair controller 2 to player 2
-        GameObject p2 = Instantiate(player2Prefab, new Vector3(2, 1, 0), Quaternion.identity);
-        var p2Controller = p2.GetComponent<Player2Controller>();
-        var player2Controls = new PlayerControls();
-        player2Controls.Player2.Enable();
+        if (gamepads.Count >= 2)
+        {
+            var p2Controller = player2.GetComponent<Player2Controller>();
+            var player2Controls = new PlayerControls();
+            player2Controls.Player2.Enable();
 
-        var user2 = InputUser.CreateUserWithoutPairedDevices();
-        user2.AssociateActionsWithUser(player2Controls);
-        InputUser.PerformPairingWithDevice(gamepads[1], user2);
-        p2Controller.Initialize(player2Controls);
+            var user2 = InputUser.CreateUserWithoutPairedDevices();
+            user2.AssociateActionsWithUser(player2Controls);
+            InputUser.PerformPairingWithDevice(gamepads[1], user2);
+            p2Controller.Initialize(player2Controls);
+        }
+        else
+        {
+            Destroy(player2);
+            GameObject.Find("Divider").SetActive(false);
+            GameObject.Find("Camera 2").SetActive(false);
+            Rect r = GameObject.Find("Camera 1").GetComponent<Camera>().rect;
+            r.width = 1;
+            GameObject.Find("Camera 1").GetComponent<Camera>().rect = r;
+        }
     }
 }
