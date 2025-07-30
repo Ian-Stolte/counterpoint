@@ -2,7 +2,7 @@
     "name": "PlayerControls",
     "maps": [
         {
-            "name": "Player1",
+            "name": "Player",
             "id": "55995d7e-c61e-4d4d-bd2c-c719fd495851",
             "actions": [
                 {
@@ -27,6 +27,24 @@
                     "name": "Jump",
                     "type": "Button",
                     "id": "e25d66b5-e43e-4821-bb32-af4839ce12e4",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ToAlly",
+                    "type": "Value",
+                    "id": "d44f00a3-3ea1-46c2-b734-7df6a1edb1b7",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Dash",
+                    "type": "Button",
+                    "id": "5f95df36-d7f1-42b2-9e10-1d1a44669cca",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -113,6 +131,17 @@
                 },
                 {
                     "name": "",
+                    "id": "a5c4a80e-0f93-41a2-afcd-a4f69355663e",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "d1b67a74-8035-44b5-9247-49c4e65e6652",
                     "path": "<Gamepad>/buttonSouth",
                     "interactions": "",
@@ -130,6 +159,50 @@
                     "processors": "",
                     "groups": "",
                     "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "22e3fa5e-28fa-4c2c-896a-8234e7a450d9",
+                    "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToAlly",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3730e12e-cabb-48b2-b468-813316142ef6",
+                    "path": "<Keyboard>/shift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToAlly",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e30e420d-efa9-4a81-bf0a-bc04deac3098",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "50b9b1fe-17ab-4b20-82e3-86ed80fd1ab9",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Dash",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

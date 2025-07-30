@@ -286,6 +286,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3595330329623474287, guid: 7ab184771098a4231b53464f3a167d11,
+        type: 3}
+      propertyPath: dashCD
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3595330329623474287, guid: 7ab184771098a4231b53464f3a167d11,
+        type: 3}
+      propertyPath: attackCD
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3595330329623474287, guid: 7ab184771098a4231b53464f3a167d11,
+        type: 3}
+      propertyPath: recoveryTime
+      value: 1.2
+      objectReference: {fileID: 0}
     - target: {fileID: 5002817255446442266, guid: 7ab184771098a4231b53464f3a167d11,
         type: 3}
       propertyPath: m_Name
@@ -1620,6 +1635,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Player 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4168013122566579459, guid: 586fa31981af74407a94684e675623ab,
+        type: 3}
+      propertyPath: dashCD
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4168013122566579459, guid: 586fa31981af74407a94684e675623ab,
+        type: 3}
+      propertyPath: attackCD
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4168013122566579459, guid: 586fa31981af74407a94684e675623ab,
+        type: 3}
+      propertyPath: recoveryTime
+      value: 0.8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

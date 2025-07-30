@@ -28,24 +28,27 @@ public class InputManager : MonoBehaviour
         }*/
 
         //Pair controller 1 to player 1
-        var p1Controller = player1.GetComponent<Player1Controller>();
+        var p1Controller = player1.GetComponent<PlayerController>();
         var player1Controls = new PlayerControls();
-        player1Controls.Player1.Enable();
+        player1Controls.Player.Enable();
 
         var user1 = InputUser.CreateUserWithoutPairedDevices();
         user1.AssociateActionsWithUser(player1Controls);
         if (gamepads.Count > 0)
             InputUser.PerformPairingWithDevice(gamepads[0], user1);
         else
+        {
             InputUser.PerformPairingWithDevice(Keyboard.current, user1);
+            InputUser.PerformPairingWithDevice(Mouse.current, user1);
+        }
         p1Controller.Initialize(player1Controls);
 
         //Pair controller 2 to player 2
         if (gamepads.Count >= 2)
         {
-            var p2Controller = player2.GetComponent<Player2Controller>();
+            var p2Controller = player2.GetComponent<PlayerController>();
             var player2Controls = new PlayerControls();
-            player2Controls.Player2.Enable();
+            player2Controls.Player.Enable();
 
             var user2 = InputUser.CreateUserWithoutPairedDevices();
             user2.AssociateActionsWithUser(player2Controls);
