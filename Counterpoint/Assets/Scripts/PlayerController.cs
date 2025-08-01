@@ -6,11 +6,11 @@ using UnityEngine.InputSystem.Users;
 public class PlayerController : MonoBehaviour
 {
     private PlayerControls controls;
-    private Rigidbody rb;
+    protected Rigidbody rb;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed;
-    [SerializeField] private float rotationSpeed;
+    [SerializeField] protected float rotationSpeed;
     protected Vector3 moveDir;
    
     [Header("Ground Check")]
@@ -29,6 +29,9 @@ public class PlayerController : MonoBehaviour
     private float jumpInputDelay;
 
     [Header("Dash")]
+    [SerializeField] protected float dashTime;
+    [SerializeField] protected float dashForce;
+
     [SerializeField] private float dashCD;
     private float dashDelay;
     private float dashInputDelay;
@@ -36,6 +39,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Targeting")]
     protected bool targetAlly;
+    [SerializeField] protected Transform ally;
 
     [Header("Attack")]
     [SerializeField] private float attackCD;
@@ -213,6 +217,7 @@ public class PlayerController : MonoBehaviour
     public void TargetAlly(bool pressed)
     {
         //show outline or other visual indicator, maybe turn to face ally (while remembering previous orientation)
-        targetAlly = pressed;
+        if (ally != null)
+            targetAlly = pressed;
     }
 }

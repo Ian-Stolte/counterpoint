@@ -17,15 +17,6 @@ public class InputManager : MonoBehaviour
     {
         var gamepads = Gamepad.all;
         Debug.Log("Controllers connected: " + gamepads.Count);
-        /*if (gamepads.Count == 0)
-        {
-            Debug.LogError("No controllers connected!");
-            Application.Quit();
-            #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-            #endif
-            return;
-        }*/
 
         //Pair controller 1 to player 1
         var p1Controller = player1.GetComponent<PlayerController>();
