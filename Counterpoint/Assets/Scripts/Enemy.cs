@@ -27,14 +27,19 @@ public class Enemy : MonoBehaviour
     }
 
 
-    public void TakeDamage(int dmg, int playerNum)
+    public void TakeDamage(int dmg, int playerNum, PlayerController script)
     {
         if (playerNum != lastPlayer)
         {
             lastPlayer = playerNum;
-            comboMeter++;
+            comboMeter = Mathf.Min(6, comboMeter + 1);
             comboTimer = comboCD;
             GetComponent<MeshRenderer>().material = comboMats[playerNum];
+            if (comboMeter == 6)
+                script.SpecialMeter(10);
+            else
+                script.SpecialMeter(5);
+            //show combo on UI
         }
 
         hp -= dmg;

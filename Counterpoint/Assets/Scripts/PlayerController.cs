@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.InputSystem.Users;
 
 public class PlayerController : MonoBehaviour
@@ -54,6 +55,11 @@ public class PlayerController : MonoBehaviour
     protected bool charging;
     [SerializeField] protected GameObject impactVFX;
 
+    [Header("Special")]
+    [SerializeField] private float specialCost;
+    [SerializeField] private Image specialFill;
+    protected float specialPct;
+    [SerializeField] private GameObject specialSparks;
 
 
     private void Start()
@@ -80,6 +86,8 @@ public class PlayerController : MonoBehaviour
 
         controls.Player.ToAlly.performed += ctx => TargetAlly(true);
         controls.Player.ToAlly.canceled += ctx => TargetAlly(false);
+
+        controls.Player.Special.performed += ctx => SpecialPressed();
     }
 
 
@@ -219,6 +227,23 @@ public class PlayerController : MonoBehaviour
     }
 
 
+    public void SpecialPressed()
+    {
+        if (specialPct >= specialCost && !dashing && attackDelay <= 0)
+        {
+            Special();
+            SpecialMeter(-specialCost);
+        }
+    }
+
+    public virtual IEnumerator Special()
+    {
+        attacking = true;
+        attackDelay = attackCD;
+        yield return null;
+    }
+
+
     public void TargetAlly(bool pressed)
     {
         //show outline or other visual indicator, maybe turn to face ally (while remembering previous orientation)
@@ -232,7 +257,7 @@ public class PlayerController : MonoBehaviour
     ///
     /// HELPER FUNCTIONS
     /// 
-    
+
     protected Transform SnapToEnemies(float checkDist)
     {
         Vector3 lookDir = (moveDir == Vector3.zero) ? transform.forward : moveDir;
@@ -271,5 +296,18 @@ public class PlayerController : MonoBehaviour
         }
 
         return (closestEnemy == null) ? transform : closestEnemy.transform; //return self if no enemy to prevent null references
+    }
+
+
+    public void SpecialMeter(float addedPct)
+    {
+        if (addedPct == 0 || (specialPct >= 100 && addedPct > 0))
+            return;
+
+        specialPct = Mathf.Min(100, specialPct + addedPct);
+        specialFill.fillAmount = specialPct / 100;
+        specialFill.transform.GetChild(0).GetComponent<TMPro.TextMeshProUGUI>().text = Mathf.Round(specialPct) + "%";
+
+        specialSparks.SetActive(specialPct >= specialCost) ;
     }
 }

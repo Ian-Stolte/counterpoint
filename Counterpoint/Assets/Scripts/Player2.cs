@@ -69,7 +69,7 @@ public class Player2 : PlayerController
             }
             float kbForce = attackKB + attackKB*0.8f*charge;
             hit.GetComponent<Rigidbody>().AddForce(kbDir * kbForce);
-            hit.GetComponent<Enemy>().TakeDamage((int)Mathf.Round(0 + 0*charge), 2);
+            hit.GetComponent<Enemy>().TakeDamage((int)Mathf.Round(0 + 0*charge), 2, this);
         }
         if (hits.Length > 0)
             Instantiate(impactVFX, transform.position + attackDir, Quaternion.identity);
