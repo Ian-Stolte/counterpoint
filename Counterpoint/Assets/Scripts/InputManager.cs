@@ -49,11 +49,11 @@ public class InputManager : MonoBehaviour
         else
         {
             Destroy(player2);
-            GameObject.Find("Divider").SetActive(false);
+            /*GameObject.Find("Divider").SetActive(false);
             GameObject.Find("Camera 2").SetActive(false);
             Rect r = GameObject.Find("Camera 1").GetComponent<Camera>().rect;
             r.width = 1;
-            GameObject.Find("Camera 1").GetComponent<Camera>().rect = r;
+            GameObject.Find("Camera 1").GetComponent<Camera>().rect = r;*/
         }
     }
 }

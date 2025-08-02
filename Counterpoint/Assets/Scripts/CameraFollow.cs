@@ -5,7 +5,7 @@ using UnityEngine;
 public class CameraFollow : MonoBehaviour
 {
     [SerializeField] private Vector3 offset;
-    [SerializeField] private Transform[] players;
+    [SerializeField] private List<Transform> players;
 
 
     private void Update()
@@ -13,8 +13,11 @@ public class CameraFollow : MonoBehaviour
         Vector3 center = Vector3.zero;
         foreach (Transform t in players)
         {
-            center += new Vector3(t.position.x, 0, t.position.z);
+            if (t == null)
+                players.Remove(t);
+            else
+                center += new Vector3(t.position.x, 0, t.position.z);
         }
-        transform.position = center/players.Length + offset;
+        transform.position = center/players.Count + offset;
     }
 }

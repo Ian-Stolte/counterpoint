@@ -5,6 +5,10 @@ using UnityEngine.InputSystem.Users;
 
 public class Player1 : PlayerController
 {
+    [Header("Attack")]
+    [SerializeField] private GameObject attackHitbox;
+    [SerializeField] private float attackKB;
+
 
     public override void StartAttackCharge()
     {
@@ -17,11 +21,21 @@ public class Player1 : PlayerController
         StartCoroutine(base.Attack());
         //start animation
 
-        yield return new WaitForSeconds(0.1f);
+        //look in attack direction
+        Vector3 attackDir = (moveDir == Vector3.zero) ? transform.forward : moveDir;
+        float elapsed = 0;
+        while (elapsed < 0.1f)
+        {
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(new Vector3(attackDir.x, 0, attackDir.z)), rotationSpeed * 2f * Time.deltaTime);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        transform.rotation = Quaternion.LookRotation(new Vector3(attackDir.x, 0, attackDir.z));
 
         bool moving = moveDir.magnitude > 0.2f;
         string target = (targetAlly) ? "partner" : "moveDir";
-        Debug.Log("P1: " + chargeTimer + " charge | targeting " + target + " | " + moving + " | ");
+        float charge = Mathf.Min(chargeTimer, 2);
+        Debug.Log("P1: " + charge + " charge | targeting " + target + " | " + moving + " | ");
 
         if (moving)
         {
@@ -29,10 +43,21 @@ public class Player1 : PlayerController
         }
 
         //check hitbox for any enemies
+        attackHitbox.SetActive(true);
+        Bounds b = attackHitbox.GetComponent<BoxCollider>().bounds;
+        Collider[] hits = Physics.OverlapBox(b.center, b.extents, Quaternion.identity, LayerMask.GetMask("Enemy"));
+        foreach (Collider hit in hits)
+        {
             // deal damage to all enemies & knock back in targeted direction
-            // if targetAlly, position yourself so enemies are between you and ally (TODO: figure out exactly how)
+            Vector3 kbDir = (hit.transform.position - transform.position).normalized + new Vector3(0, 0.2f, 0);
+            float kbForce = attackKB + attackKB*0.8f*charge;
+            hit.GetComponent<Rigidbody>().AddForce(kbDir * kbForce);
+            hit.GetComponent<Enemy>().TakeDamage((int)Mathf.Round(0 + 0*charge), 1);
+        }
+        // if targetAlly, position yourself so enemies are between you and ally (TODO: figure out exactly how)
 
-        yield return new WaitForSeconds(0.5f); //lock controls to let anim finish (duration dependent on attack type)
+        yield return new WaitForSeconds(0.2f + 0.2f*charge); //lock controls to let anim finish (duration dependent on attack type)
+        attackHitbox.SetActive(false);
         attacking = false;
     }
 
@@ -56,6 +81,7 @@ public class Player1 : PlayerController
         }
 
         //perform dash
+        Physics.IgnoreLayerCollision(6, 7, true);
         GetComponent<TrailRenderer>().emitting = true;
         float elapsed = 0;
         while (elapsed < dashTime)
@@ -72,6 +98,7 @@ public class Player1 : PlayerController
         rb.velocity = Vector2.zero;
 
         GetComponent<TrailRenderer>().emitting = false;
+        Physics.IgnoreLayerCollision(6, 7, false);
         dashing = false;
     }
 }
