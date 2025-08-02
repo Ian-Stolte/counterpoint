@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float moveSpeed;
     [SerializeField] protected float rotationSpeed;
     protected Vector3 moveDir;
-   
+
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
@@ -36,6 +36,8 @@ public class PlayerController : MonoBehaviour
     private float dashDelay;
     private float dashInputDelay;
     protected bool dashing;
+    private Material baseMat;
+    [SerializeField] private Material noDashMat;
 
     [Header("Targeting")]
     protected bool targetAlly;
@@ -50,12 +52,14 @@ public class PlayerController : MonoBehaviour
     private bool wantToCharge;
     protected float chargeTimer;
     protected bool charging;
+    [SerializeField] protected GameObject impactVFX;
 
 
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+        baseMat = GetComponent<MeshRenderer>().material;
     }
 
 
@@ -70,7 +74,7 @@ public class PlayerController : MonoBehaviour
         controls.Player.Jump.performed += ctx => JumpPressed();
 
         controls.Player.Dash.performed += ctx => DashPressed();
-        
+
         controls.Player.Attack.performed += ctx => AttackPressed();
         controls.Player.Attack.canceled += ctx => AttackReleased();
 
@@ -121,6 +125,7 @@ public class PlayerController : MonoBehaviour
         {
             StartCoroutine(Dash());
         }
+        transform.GetChild(0).GetComponent<MeshRenderer>().material = (dashDelay <= 0f) ? baseMat : noDashMat;
 
 
         //Attack
@@ -128,7 +133,7 @@ public class PlayerController : MonoBehaviour
             StartAttackCharge();
         if (charging)
             chargeTimer += Time.deltaTime;
-            
+
         if (!charging && !attacking)
             attackDelay -= Time.deltaTime;
 
@@ -167,7 +172,7 @@ public class PlayerController : MonoBehaviour
     {
         jumpInputDelay = 0.3f;
     }
-    
+
     private void Jump()
     {
         rb.velocity = new Vector3(rb.velocity.x, jumpPower, rb.velocity.z);
@@ -209,7 +214,7 @@ public class PlayerController : MonoBehaviour
     public virtual IEnumerator Attack() //actually attack
     {
         attacking = true;
-        attackDelay = attackCD; //TODO: depends on chargeTime & attack type?
+        attackDelay = attackCD;
         yield return null;
     }
 
@@ -219,5 +224,52 @@ public class PlayerController : MonoBehaviour
         //show outline or other visual indicator, maybe turn to face ally (while remembering previous orientation)
         if (ally != null)
             targetAlly = pressed;
+    }
+
+
+
+
+    ///
+    /// HELPER FUNCTIONS
+    /// 
+    
+    protected Transform SnapToEnemies(float checkDist)
+    {
+        Vector3 lookDir = (moveDir == Vector3.zero) ? transform.forward : moveDir;
+
+        Collider[] nearbyEnemies = Physics.OverlapSphere(transform.position, checkDist, LayerMask.GetMask("Enemy"));
+        Collider closestEnemy = null;
+        float closestDist = float.MaxValue;
+
+        // First, check within 90 degrees of facing direction
+        foreach (var enemy in nearbyEnemies)
+        {
+            Vector3 toEnemy = (enemy.transform.position - transform.position).normalized;
+            float angle = Vector3.Angle(lookDir, toEnemy);
+            float dist = Vector3.Distance(transform.position, enemy.transform.position);
+            if (angle <= 45f && dist < closestDist)
+            {
+                closestDist = dist;
+                closestEnemy = enemy;
+            }
+        }
+
+        // If none found, check within 180 degrees
+        if (closestEnemy == null)
+        {
+            foreach (var enemy in nearbyEnemies)
+            {
+                Vector3 toEnemy = (enemy.transform.position - transform.position).normalized;
+                float angle = Vector3.Angle(lookDir, toEnemy);
+                float dist = Vector3.Distance(transform.position, enemy.transform.position);
+                if (angle <= 90f && dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestEnemy = enemy;
+                }
+            }
+        }
+
+        return (closestEnemy == null) ? transform : closestEnemy.transform; //return self if no enemy to prevent null references
     }
 }

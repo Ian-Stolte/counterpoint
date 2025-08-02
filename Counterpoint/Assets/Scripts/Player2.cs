@@ -21,8 +21,12 @@ public class Player2 : PlayerController
         StartCoroutine(base.Attack());
         //start animation
 
+        //snap to nearby enemies, prioritizing ones in the direction we're facing
+        Transform closestEnemy = SnapToEnemies(4);
+        Vector3 lookDir = (moveDir == Vector3.zero) ? transform.forward : moveDir;
+        Vector3 attackDir = (closestEnemy == transform) ? lookDir : (closestEnemy.position - transform.position).normalized;
+
         //look in attack direction
-        Vector3 attackDir = (moveDir == Vector3.zero) ? transform.forward : moveDir;
         float elapsed = 0;
         while (elapsed < 0.05f)
         {
@@ -33,14 +37,23 @@ public class Player2 : PlayerController
         transform.rotation = Quaternion.LookRotation(new Vector3(attackDir.x, 0, attackDir.z));
 
         bool moving = moveDir.magnitude > 0.2f;
-        string target = (targetAlly) ? "partner" : "moveDir";
         float charge = Mathf.Min(chargeTimer, 1);
-        Debug.Log("P2 ATTACK: | " + charge + " charge | targeting " + target + " | " + moving + " | ");
+        chargeTimer = 0;
 
-        if (moving)
+        //if enemy far away, step toward them
+        if (moving && (Vector3.Distance(closestEnemy.position, transform.position) > 2 || closestEnemy == transform))
         {
-            //dash in moveDir before attacking
+            elapsed = 0;
+            while (elapsed < 0.1f)
+            {
+                rb.velocity = attackDir * dashForce / 2f * (-Mathf.Pow((elapsed / dashTime), 2) + 1);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            rb.velocity = Vector2.zero;
         }
+
+        Physics.IgnoreLayerCollision(6, 7, true); //ignore only self, not ally?
 
         //check hitbox for any enemies
         attackHitbox.SetActive(true);
@@ -49,16 +62,23 @@ public class Player2 : PlayerController
         foreach (Collider hit in hits)
         {
             // deal damage to all enemies & knock back in targeted direction
-            Vector3 kbDir = (hit.transform.position - transform.position).normalized + new Vector3(0, 0.2f, 0);
+            Vector3 kbDir = attackDir;
+            if (targetAlly)
+            {
+                kbDir = (ally.position - transform.position).normalized;
+            }
             float kbForce = attackKB + attackKB*0.8f*charge;
             hit.GetComponent<Rigidbody>().AddForce(kbDir * kbForce);
             hit.GetComponent<Enemy>().TakeDamage((int)Mathf.Round(0 + 0*charge), 2);
         }
+        if (hits.Length > 0)
+            Instantiate(impactVFX, transform.position + attackDir, Quaternion.identity);
         // if targetAlly, position yourself so enemies are between you and ally (TODO: figure out exactly how)
         // if airborne, keep height & potentially refresh jump if hit something
 
-        yield return new WaitForSeconds(0.15f + 0.15f*charge); //lock controls to let anim finish (duration dependent on attack type)
+        yield return new WaitForSeconds(0.15f + 0.15f * charge); //lock controls to let anim finish (duration dependent on attack type)
         attackHitbox.SetActive(false);
+        Physics.IgnoreLayerCollision(6, 7, true);
         attacking = false;
     }
 
