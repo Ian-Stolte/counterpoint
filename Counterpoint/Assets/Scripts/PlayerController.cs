@@ -139,9 +139,9 @@ public class PlayerController : MonoBehaviour
         
         //Special
         specialInputDelay -= Time.deltaTime;
-        if (specialInputDelay > 0 && specialPct >= specialCost && !dashing && attackDelay <= 0)
+        if (specialInputDelay > 0 && specialPct >= specialCost && !dashing && !attacking)
         {
-            Special();
+            StartCoroutine(Special());
             SpecialMeter(-specialCost);
         }
 
@@ -257,6 +257,7 @@ public class PlayerController : MonoBehaviour
     public virtual IEnumerator Special()
     {
         attacking = true;
+        chargeTimer = 0f;
         attackDelay = attackCD;
         yield return null;
     }
