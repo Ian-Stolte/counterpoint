@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private bool canAirAttack;
 
     [Header("Jump")]
     [SerializeField] private float jumpPower;
@@ -26,8 +27,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float hangPoint;
 
     [HideInInspector] public bool grounded;
+    protected int airJumps;
     private float jumpDelay;
-    private float jumpInputDelay;
+    protected float jumpInputDelay;
 
     [Header("Dash")]
     [SerializeField] protected float dashTime;
@@ -60,6 +62,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Image specialFill;
     protected float specialPct;
     [SerializeField] private GameObject specialSparks;
+    private float specialInputDelay;
 
 
     private void Start()
@@ -101,35 +104,19 @@ public class PlayerController : MonoBehaviour
         //Ground check
         Bounds b = groundCheck.GetComponent<SphereCollider>().bounds;
         grounded = (Physics.CheckSphere(b.center, 0.5f, groundLayer) && jumpDelay == 0);
+        if (grounded)
+            airJumps = 0;
         /*anim.SetBool("airborne", !grounded);
         anim.SetBool("jumpDelay", jumpDelay > 0);
         anim.SetFloat("yVel", rb.velocity.y);*/
 
 
-        //Apply gravity
-        if (Mathf.Abs(rb.velocity.y) < hangPoint)
-            rb.AddForce(-9.8f * hangGravity * Vector3.up, ForceMode.Acceleration);
-        else if (rb.velocity.y < 0)
-            rb.AddForce(-9.8f * downGravity * Vector3.up, ForceMode.Acceleration);
-        else
-            rb.AddForce(-9.8f * upGravity * Vector3.up, ForceMode.Acceleration);
-
-
-        //Jump
-        jumpDelay = Mathf.Max(0, jumpDelay - Time.deltaTime);
-        jumpInputDelay = Mathf.Max(0, jumpInputDelay - Time.deltaTime);
-        if (grounded && jumpInputDelay > 0 && jumpDelay <= 0)
-        {
-            jumpDelay = 0.3f;
-            Jump();
-        }
-
-
         //Dash
         if (!dashing)
             dashDelay -= Time.deltaTime;
-        dashInputDelay -= Time.deltaTime;
-        if (dashInputDelay > 0 && dashDelay <= 0f && !attacking)
+        if (grounded || canAirAttack)
+            dashInputDelay -= Time.deltaTime;
+        if (dashInputDelay > 0 && dashDelay <= 0f && !attacking && (grounded || canAirAttack))
         {
             StartCoroutine(Dash());
         }
@@ -137,7 +124,7 @@ public class PlayerController : MonoBehaviour
 
 
         //Attack
-        if (wantToCharge && attackDelay <= 0 && !dashing) //start charging once attackCD is up
+        if (wantToCharge && attackDelay <= 0 && !dashing && (grounded || canAirAttack)) //start charging once attackCD is up
             StartAttackCharge();
         if (charging)
             chargeTimer += Time.deltaTime;
@@ -146,9 +133,41 @@ public class PlayerController : MonoBehaviour
             attackDelay -= Time.deltaTime;
 
         attackInputDelay -= Time.deltaTime;
-        if (attackInputDelay > 0f && attackDelay <= 0f && !dashing)
+        if (attackInputDelay > 0f && attackDelay <= 0f && !dashing && (grounded || canAirAttack))
             StartCoroutine(Attack());
+
+        
+        //Special
+        specialInputDelay -= Time.deltaTime;
+        if (specialInputDelay > 0 && specialPct >= specialCost && !dashing && attackDelay <= 0)
+        {
+            Special();
+            SpecialMeter(-specialCost);
+        }
+
+
+        //Jump
+        jumpDelay = Mathf.Max(0, jumpDelay - Time.deltaTime);
+        if (!attacking && !dashing)
+            jumpInputDelay = Mathf.Max(0, jumpInputDelay - Time.deltaTime);
+        if ((grounded || airJumps > 0) && jumpInputDelay > 0 && jumpDelay <= 0 && !attacking && !dashing && (!charging || canAirAttack))
+        {
+            jumpDelay = 0.3f;
+            Jump();
+            airJumps = Mathf.Max(0, airJumps-1);
+        }
+        
+
+        //Apply gravity
+        float gravity = (charging && chargeTimer < 1f) ? -2f : -9.8f; //less hang/down gravity if charging an attack
+        if (Mathf.Abs(rb.velocity.y) < hangPoint)
+            rb.AddForce(gravity * hangGravity * Vector3.up, ForceMode.Acceleration);
+        else if (rb.velocity.y < 0)
+            rb.AddForce(gravity * downGravity * Vector3.up, ForceMode.Acceleration);
+        else
+            rb.AddForce(-9.8f * upGravity * Vector3.up, ForceMode.Acceleration);
     }
+
 
     private void MovePressed(Vector2 input)
     {
@@ -183,7 +202,10 @@ public class PlayerController : MonoBehaviour
 
     private void Jump()
     {
-        rb.velocity = new Vector3(rb.velocity.x, jumpPower, rb.velocity.z);
+        if (grounded)
+            rb.velocity = new Vector3(rb.velocity.x, jumpPower, rb.velocity.z);
+        else
+            rb.velocity = new Vector3(rb.velocity.x, jumpPower*0.8f, rb.velocity.z);
     }
 
 
@@ -229,11 +251,7 @@ public class PlayerController : MonoBehaviour
 
     public void SpecialPressed()
     {
-        if (specialPct >= specialCost && !dashing && attackDelay <= 0)
-        {
-            Special();
-            SpecialMeter(-specialCost);
-        }
+        specialInputDelay = 0.5f;
     }
 
     public virtual IEnumerator Special()
@@ -269,6 +287,8 @@ public class PlayerController : MonoBehaviour
         // First, check within 90 degrees of facing direction
         foreach (var enemy in nearbyEnemies)
         {
+            if (Mathf.Abs(enemy.transform.position.y - transform.position.y) > 0.5f)
+                continue;
             Vector3 toEnemy = (enemy.transform.position - transform.position).normalized;
             float angle = Vector3.Angle(lookDir, toEnemy);
             float dist = Vector3.Distance(transform.position, enemy.transform.position);
@@ -284,6 +304,8 @@ public class PlayerController : MonoBehaviour
         {
             foreach (var enemy in nearbyEnemies)
             {
+                if (Mathf.Abs(enemy.transform.position.y - transform.position.y) > 0.8f)
+                    continue;
                 Vector3 toEnemy = (enemy.transform.position - transform.position).normalized;
                 float angle = Vector3.Angle(lookDir, toEnemy);
                 float dist = Vector3.Distance(transform.position, enemy.transform.position);

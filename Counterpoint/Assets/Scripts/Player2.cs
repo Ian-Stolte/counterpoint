@@ -59,24 +59,48 @@ public class Player2 : PlayerController
         attackHitbox.SetActive(true);
         Bounds b = attackHitbox.GetComponent<BoxCollider>().bounds;
         Collider[] hits = Physics.OverlapBox(b.center, b.extents, Quaternion.identity, LayerMask.GetMask("Enemy"));
+        
+        // deal damage to all enemies & knock back in targeted direction
         foreach (Collider hit in hits)
         {
-            // deal damage to all enemies & knock back in targeted direction
-            Vector3 kbDir = attackDir;
-            if (targetAlly)
+            Vector3 kbDir = (targetAlly) ? (ally.position - transform.position).normalized : attackDir;
+            float comboMultiplier = 1 + hit.GetComponent<Enemy>().comboMeter * 0.15f;
+            if (!grounded)
             {
-                kbDir = (ally.position - transform.position).normalized;
+                if (!targetAlly || ally.position.y > transform.position.y)
+                    kbDir += new Vector3(0, 0.5f, 0);
+                else
+                    kbDir *= 1.3f;
             }
-            float kbForce = attackKB + attackKB*0.8f*charge;
+            float kbForce = attackKB * (1 + 0.8f * charge) * comboMultiplier;
             hit.GetComponent<Rigidbody>().AddForce(kbDir * kbForce);
-            hit.GetComponent<Enemy>().TakeDamage((int)Mathf.Round(0 + 0*charge), 2, this);
+            hit.GetComponent<Enemy>().TakeDamage((int)Mathf.Round(0 + 0 * charge), 2, this);
         }
         if (hits.Length > 0)
             Instantiate(impactVFX, transform.position + attackDir, Quaternion.identity);
-        // if targetAlly, position yourself so enemies are between you and ally (TODO: figure out exactly how)
-        // if airborne, keep height & potentially refresh jump if hit something
+        //TODO: if targetAlly, position yourself so enemies are between you and ally?
 
-        yield return new WaitForSeconds(0.15f + 0.15f * charge); //lock controls to let anim finish (duration dependent on attack type)
+        jumpInputDelay = 0;
+
+        float waitTime = (0.15f + 0.15f*charge);
+        //if airborne and hit an enemy, keep height & refresh jump
+        if (!grounded && hits.Length > 0)
+        {
+            elapsed = 0f;
+            while (elapsed < waitTime)
+            {
+                float quadFactor = (Mathf.Pow((elapsed/waitTime), 2) + 0.5f);
+                rb.velocity = new Vector3(rb.velocity.x, quadFactor, rb.velocity.z);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            airJumps++;
+        }
+        else
+        {
+            yield return new WaitForSeconds(waitTime); //lock controls to let anim finish
+        }
+        
         attackHitbox.SetActive(false);
         Physics.IgnoreLayerCollision(6, 7, true);
         attacking = false;

@@ -59,23 +59,36 @@ public class Player1 : PlayerController
         attackHitbox.SetActive(true);
         Bounds b = attackHitbox.GetComponent<BoxCollider>().bounds;
         Collider[] hits = Physics.OverlapBox(b.center, b.extents, Quaternion.identity, LayerMask.GetMask("Enemy"));
+
+        // deal damage to all enemies & knock back in targeted direction
         foreach (Collider hit in hits)
         {
-            // deal damage to all enemies & knock back in targeted direction
-            Vector3 kbDir = attackDir;
-            if (targetAlly)
+            Vector3 horizKB = (targetAlly) ? (ally.position - transform.position).normalized : attackDir;
+            horizKB *= 1 + (0.8f*charge); //knock back further if longer charge
+            float comboMultiplier = 1 + hit.GetComponent<Enemy>().comboMeter * 0.15f;
+
+            //if jump key pressed, knock enemies into the air
+            if (jumpInputDelay > 0f)
             {
-                kbDir = (ally.position - transform.position).normalized;
+                Vector3 upwardKB = Vector3.up * (1 + (0.4f * charge));
+                if (!moving)
+                    hit.GetComponent<Rigidbody>().AddForce(upwardKB * attackKB * comboMultiplier);
+                else
+                    hit.GetComponent<Rigidbody>().AddForce((horizKB * 0.5f + upwardKB) * attackKB * comboMultiplier);
             }
-            float kbForce = attackKB + attackKB*0.8f*charge;
-            hit.GetComponent<Rigidbody>().AddForce(kbDir * kbForce);
+            else
+            {
+                hit.GetComponent<Rigidbody>().AddForce(horizKB * attackKB * comboMultiplier);
+            }
             hit.GetComponent<Enemy>().TakeDamage((int)Mathf.Round(0 + 0*charge), 1, this);
         }
         if (hits.Length > 0)
             Instantiate(impactVFX, transform.position + attackDir*2, Quaternion.identity);
-        // if targetAlly, position yourself so enemies are between you and ally (TODO: figure out exactly how)
+        //TODO: if targetAlly, position yourself so enemies are between you and ally?
+        
+        jumpInputDelay = 0;
 
-            yield return new WaitForSeconds(0.2f + 0.2f * charge); //lock controls to let anim finish (duration dependent on attack type)
+        yield return new WaitForSeconds(0.2f + 0.2f * charge); //lock controls to let anim finish
         Physics.IgnoreLayerCollision(6, 7, false);
         attackHitbox.SetActive(false);
         attacking = false;
