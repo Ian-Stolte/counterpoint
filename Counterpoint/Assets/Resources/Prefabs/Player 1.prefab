@@ -400,9 +400,6 @@ MonoBehaviour:
   moveSpeed: 4
   rotationSpeed: 30
   groundCheck: {fileID: 8820092714428594478}
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 8
   canAirAttack: 0
   jumpPower: 15
   upGravity: 1.2
@@ -414,21 +411,23 @@ MonoBehaviour:
   dashForce: 22
   dashCD: 1
   noDashMat: {fileID: 2100000, guid: 79196b78f77d84facb1de9e0a05e2add, type: 2}
+  dashIndicator: {fileID: 0}
   ally: {fileID: 0}
-  attackCD: 0.5
+  attackCD: 0.4
   impactVFX: {fileID: 1138145773514678216, guid: 550453a237f454e92b04f6d2a7623b13,
     type: 3}
-  specialCost: 10
+  specialCD: 0.3
+  specialCost: 40
   specialFill: {fileID: 0}
   specialSparks: {fileID: 9212155107424066405}
-  attackHitbox: {fileID: 4631974066271516033}
-  attackKB: 70
   specialTime: 0.5
   specialDashForce: 28
-  specialWallForce: 90
+  specialKB: 90
   specialDmg: 0
   specialVFX: {fileID: 1138145773514678216, guid: 083dc028073434ea4ae79258293b7ad1,
     type: 3}
+  attackHitbox: {fileID: 4631974066271516033}
+  attackKB: 80
   specialHitbox: {fileID: 3464825005831638744}
 --- !u!136 &7499783435629719454
 CapsuleCollider:

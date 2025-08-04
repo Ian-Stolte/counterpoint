@@ -28,7 +28,9 @@ public class Player2 : PlayerController
         //snap to nearby enemies, prioritizing ones in the direction we're facing
         Transform closestEnemy = SnapToEnemies(4);
         Vector3 lookDir = (moveDir == Vector3.zero) ? transform.forward : moveDir;
-        Vector3 attackDir = (closestEnemy == transform) ? lookDir : (closestEnemy.position - transform.position).normalized;
+        Vector3 enemyDir = (closestEnemy.position - transform.position);
+        enemyDir.y = 0;
+        Vector3 attackDir = (closestEnemy == transform) ? lookDir : enemyDir.normalized;
 
         //look in attack direction
         float elapsed = 0;
@@ -68,6 +70,8 @@ public class Player2 : PlayerController
         foreach (Collider hit in hits)
         {
             Vector3 kbDir = (targetAlly) ? (ally.position - transform.position).normalized : attackDir;
+            if (!grounded && !hit.GetComponent<Enemy>().grounded)
+                kbDir += Vector3.up * 0.8f;
             float comboMultiplier = 1 + hit.GetComponent<Enemy>().comboMeter * 0.15f;
             if (!grounded)
             {
@@ -78,7 +82,7 @@ public class Player2 : PlayerController
             }
             float kbForce = attackKB * (1 + 0.8f * charge) * comboMultiplier;
             hit.GetComponent<Rigidbody>().AddForce(kbDir * kbForce, ForceMode.Impulse);
-            hit.GetComponent<Enemy>().TakeDamage((int)Mathf.Round(0 + 0 * charge), 2, this);
+            hit.GetComponent<Enemy>().TakeDamage((int)Mathf.Round(0 + 0 * charge), 0.2f + 0.1f*charge, 2, this);
         }
         if (hits.Length > 0)
             Instantiate(impactVFX, transform.position + attackDir, Quaternion.identity);
@@ -86,7 +90,7 @@ public class Player2 : PlayerController
 
         jumpInputDelay = 0;
 
-        float waitTime = (0.15f + 0.15f*charge);
+        float waitTime = (0.1f + 0.1f*charge);
         //if airborne and hit an enemy, keep height & refresh jump
         if (!grounded && hits.Length > 0)
         {
@@ -166,7 +170,7 @@ public class Player2 : PlayerController
         Collider[] finalHits = Physics.OverlapSphere(transform.position, specialRadius, LayerMask.GetMask("Enemy"));
         foreach (Collider hit in finalHits)
         {
-            hit.GetComponent<Enemy>().TakeDamage(specialDmg, 2, this);
+            hit.GetComponent<Enemy>().TakeDamage(specialDmg, 0.5f, 2, this);
             hit.GetComponent<Rigidbody>().velocity = Vector2.zero;
             //Vector3 kbDir = (hit.transform.position - transform.position).normalized;
             //kbDir.y = 1.5f;

@@ -16,7 +16,6 @@ public class PlayerController : MonoBehaviour
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
-    [SerializeField] private LayerMask groundLayer;
     [SerializeField] private bool canAirAttack;
 
     [Header("Jump")]
@@ -113,7 +112,7 @@ public class PlayerController : MonoBehaviour
     {
         //Ground check
         Bounds b = groundCheck.GetComponent<SphereCollider>().bounds;
-        grounded = (Physics.CheckSphere(b.center, 0.5f, groundLayer) && jumpDelay == 0);
+        grounded = (Physics.CheckSphere(b.center, 0.5f, LayerMask.GetMask("Ground")) && jumpDelay == 0);
         if (grounded)
             airJumps = 0;
         /*anim.SetBool("airborne", !grounded);
@@ -272,7 +271,6 @@ public class PlayerController : MonoBehaviour
     {
         attacking = true;
         chargeTimer = 0f;
-        attackDelay = attackCD;
         specialDelay = specialCD;
         specialInputDelay = 0f;
         yield return null;
@@ -321,7 +319,7 @@ public class PlayerController : MonoBehaviour
         {
             foreach (var enemy in nearbyEnemies)
             {
-                if (Mathf.Abs(enemy.transform.position.y - transform.position.y) > 0.8f)
+                if (Mathf.Abs(enemy.transform.position.y - transform.position.y) > 1.3f)
                     continue;
                 Vector3 toEnemy = (enemy.transform.position - transform.position).normalized;
                 float angle = Vector3.Angle(lookDir, toEnemy);

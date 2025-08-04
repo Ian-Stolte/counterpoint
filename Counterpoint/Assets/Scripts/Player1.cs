@@ -74,17 +74,17 @@ public class Player1 : PlayerController
             //if jump key pressed, knock enemies into the air
             if (jumpInputDelay > 0f)
             {
-                Vector3 upwardKB = Vector3.up * (1 + (0.4f * charge));
-                if (!moving)
-                    hit.GetComponent<Rigidbody>().AddForce(upwardKB * attackKB * comboMultiplier, ForceMode.Impulse);
-                else
-                    hit.GetComponent<Rigidbody>().AddForce((horizKB * 0.5f + upwardKB) * attackKB * comboMultiplier, ForceMode.Impulse);
+                Vector3 upwardKB = Vector3.up * (2f + (0.3f * charge));
+                //if (!moving)
+                    hit.GetComponent<Rigidbody>().AddForce(upwardKB * attackKB, ForceMode.Impulse);
+                //else
+                //    hit.GetComponent<Rigidbody>().AddForce(((comboMultiplier * horizKB * 0.5f) + upwardKB) * attackKB, ForceMode.Impulse);
             }
             else
             {
                 hit.GetComponent<Rigidbody>().AddForce(horizKB * attackKB * comboMultiplier, ForceMode.Impulse);
             }
-            hit.GetComponent<Enemy>().TakeDamage((int)Mathf.Round(0 + 0*charge), 1, this);
+            hit.GetComponent<Enemy>().TakeDamage((int)Mathf.Round(0 + 0*charge), 0.3f + 0.2f*charge, 1, this);
         }
         if (hits.Length > 0)
             Instantiate(impactVFX, transform.position + attackDir*2, Quaternion.identity);
@@ -92,7 +92,7 @@ public class Player1 : PlayerController
         
         jumpInputDelay = 0;
 
-        yield return new WaitForSeconds(0.2f + 0.2f * charge); //lock controls to let anim finish
+        yield return new WaitForSeconds(0.15f + 0.15f * charge); //lock controls to let anim finish
         //Physics.IgnoreLayerCollision(6, 7, false);
         attackHitbox.SetActive(false);
         attacking = false;
@@ -150,11 +150,14 @@ public class Player1 : PlayerController
             b = attackHitbox.GetComponent<BoxCollider>().bounds;
             if (Physics.OverlapBox(b.center, b.extents, Quaternion.identity, LayerMask.GetMask("Terrain")).Length > 0)
             {
-                draggedEnemy.GetComponent<Enemy>().TakeDamage(specialDmg, 1, this);
-                draggedEnemy.velocity = Vector2.zero;
-                Vector3 kbDir = -attackDir + new Vector3(0, 0.3f, 0);
-                draggedEnemy.AddForce(kbDir * specialKB, ForceMode.Impulse);
-                //stun enemy
+                if (draggedEnemy != null)
+                {
+                    draggedEnemy.GetComponent<Enemy>().TakeDamage(specialDmg, 0.8f, 1, this);
+                    draggedEnemy.velocity = Vector2.zero;
+                    Vector3 kbDir = -attackDir + new Vector3(0, 0.3f, 0);
+                    draggedEnemy.AddForce(kbDir * specialKB, ForceMode.Impulse);
+                    //stun enemy
+                }
                 Instantiate(specialVFX, transform.position + attackDir, Quaternion.identity);
                 break;
             }
