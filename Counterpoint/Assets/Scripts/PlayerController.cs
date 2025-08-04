@@ -41,6 +41,7 @@ public class PlayerController : MonoBehaviour
     protected bool dashing;
     private Material baseMat;
     [SerializeField] private Material noDashMat;
+    [SerializeField] private CanvasGroup dashIndicator;
 
     [Header("Targeting")]
     protected bool targetAlly;
@@ -58,11 +59,20 @@ public class PlayerController : MonoBehaviour
     [SerializeField] protected GameObject impactVFX;
 
     [Header("Special")]
+    [SerializeField] private float specialCD;
+    private float specialDelay;
+    private float specialInputDelay;
+
     [SerializeField] private float specialCost;
     [SerializeField] private Image specialFill;
     protected float specialPct;
     [SerializeField] private GameObject specialSparks;
-    private float specialInputDelay;
+
+    [SerializeField] protected float specialTime;
+    [SerializeField] protected float specialDashForce;
+    [SerializeField] protected float specialKB;
+    [SerializeField] protected int specialDmg;
+    [SerializeField] protected GameObject specialVFX;
 
 
     private void Start()
@@ -121,6 +131,7 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(Dash());
         }
         transform.GetChild(0).GetComponent<MeshRenderer>().material = (dashDelay <= 0f) ? baseMat : noDashMat;
+        dashIndicator.alpha = (dashDelay <= 0f) ? 1f : 0.2f;
 
 
         //Attack
@@ -139,11 +150,14 @@ public class PlayerController : MonoBehaviour
         
         //Special
         specialInputDelay -= Time.deltaTime;
-        if (specialInputDelay > 0 && specialPct >= specialCost && !dashing && !attacking)
-        {
-            StartCoroutine(Special());
-            SpecialMeter(-specialCost);
-        }
+
+        if (!attacking)
+            specialDelay -= Time.deltaTime;
+        if (specialInputDelay > 0 && specialDelay <= 0f && specialPct >= specialCost && !dashing && !attacking)
+            {
+                StartCoroutine(Special());
+                SpecialMeter(-specialCost);
+            }
 
 
         //Jump
@@ -259,13 +273,15 @@ public class PlayerController : MonoBehaviour
         attacking = true;
         chargeTimer = 0f;
         attackDelay = attackCD;
+        specialDelay = specialCD;
+        specialInputDelay = 0f;
         yield return null;
     }
 
 
     public void TargetAlly(bool pressed)
     {
-        //show outline or other visual indicator, maybe turn to face ally (while remembering previous orientation)
+        //TODO: show outline or other visual indicator, maybe turn to face ally (while remembering previous orientation)?
         if (ally != null)
             targetAlly = pressed;
     }

@@ -49,7 +49,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 355541160577996922}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -411,6 +411,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
+  canAirAttack: 1
   jumpPower: 14
   upGravity: 0.9
   downGravity: 1.4
@@ -420,13 +421,24 @@ MonoBehaviour:
   dashTime: 0.25
   dashForce: 30
   dashCD: 0.7
-  noDashMat: {fileID: 0}
+  noDashMat: {fileID: 2100000, guid: 57b5eea40a904456094706945a2dd1d9, type: 2}
+  dashIndicator: {fileID: 0}
   ally: {fileID: 0}
   attackCD: 0.3
   impactVFX: {fileID: 5944879003685978474, guid: b46d0af598b9b4feabd90c325b111fb0,
     type: 3}
+  specialCost: 70
+  specialFill: {fileID: 0}
+  specialSparks: {fileID: 1671392185978734441}
+  specialTime: 0.5
+  specialDashForce: 20
+  specialKB: 100
+  specialDmg: 0
+  specialVFX: {fileID: 1138145773514678216, guid: d03256372095c43a7b76a408ccc183be,
+    type: 3}
   attackHitbox: {fileID: 355541160577996922}
-  attackKB: 3500
+  attackKB: 60
+  specialRadius: 0
 --- !u!136 &982392693534258773
 CapsuleCollider:
   m_ObjectHideFlags: 0

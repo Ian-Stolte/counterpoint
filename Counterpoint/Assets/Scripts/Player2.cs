@@ -9,6 +9,10 @@ public class Player2 : PlayerController
     [SerializeField] private GameObject attackHitbox;
     [SerializeField] private float attackKB;
 
+    [Header("Special")]
+    [SerializeField] private float specialRadius;
+    private List<Rigidbody> draggedEnemies = new List<Rigidbody>();
+
 
     public override void StartAttackCharge()
     {
@@ -73,7 +77,7 @@ public class Player2 : PlayerController
                     kbDir *= 1.3f;
             }
             float kbForce = attackKB * (1 + 0.8f * charge) * comboMultiplier;
-            hit.GetComponent<Rigidbody>().AddForce(kbDir * kbForce);
+            hit.GetComponent<Rigidbody>().AddForce(kbDir * kbForce, ForceMode.Impulse);
             hit.GetComponent<Enemy>().TakeDamage((int)Mathf.Round(0 + 0 * charge), 2, this);
         }
         if (hits.Length > 0)
@@ -105,6 +109,81 @@ public class Player2 : PlayerController
         Physics.IgnoreLayerCollision(6, 7, true);
         attacking = false;
     }
+    
+
+
+    public override IEnumerator Special()
+    {
+        StartCoroutine(base.Special());
+
+        Physics.IgnoreLayerCollision(6, 7, true);
+        GetComponent<TrailRenderer>().emitting = true;
+        draggedEnemies.Clear();
+
+        Vector3 dashDir = (moveDir == Vector3.zero) ? transform.forward : moveDir;
+        if (moveDir.magnitude < 0.2f)
+            dashDir = Vector3.zero;
+        //if starting in the air, move slightly upward
+        /*if (!grounded)
+        {
+            float preElapsed = 0;
+            while (preElapsed < 0.1f)
+            {
+                rb.velocity = (Vector3.up + dashDir) * specialDashForce / 2f * (1 - Mathf.Pow(preElapsed / 0.1f, 2));
+                preElapsed += Time.deltaTime;
+                yield return null;
+            }
+        }*/
+
+        //dash downward if in the air
+        float elapsed = 0f;
+        while (!grounded && elapsed < 0.5f)
+        {
+            //float quadFactor = (elapsed < 0.2f) ? Mathf.Pow(elapsed / 0.2f, 2) : 1;
+            Vector3 plungeDir = (dashDir / 3f + Vector3.down) * specialDashForce;
+            rb.velocity = plungeDir;
+            foreach (Rigidbody r in draggedEnemies)
+            {
+                r.MovePosition(r.position + new Vector3(0, rb.position.y - r.position.y, 0) * 10 * Time.deltaTime); //pull enemies toward you vertically
+                r.velocity = plungeDir;
+            }
+
+            //check for enemies to drag
+            Collider[] hits = Physics.OverlapSphere(transform.position, specialRadius, LayerMask.GetMask("Enemy"));
+            foreach (Collider hit in hits)
+            {
+                Rigidbody r = hit.GetComponent<Rigidbody>();
+                if (r != null && !draggedEnemies.Contains(r))
+                {
+                    draggedEnemies.Add(r);
+                }
+            }
+            yield return null;
+            elapsed += Time.deltaTime;
+        }
+
+        //strike all enemies in an area around you and knock them into the air
+        Collider[] finalHits = Physics.OverlapSphere(transform.position, specialRadius, LayerMask.GetMask("Enemy"));
+        foreach (Collider hit in finalHits)
+        {
+            hit.GetComponent<Enemy>().TakeDamage(specialDmg, 2, this);
+            hit.GetComponent<Rigidbody>().velocity = Vector2.zero;
+            //Vector3 kbDir = (hit.transform.position - transform.position).normalized;
+            //kbDir.y = 1.5f;
+            hit.GetComponent<Rigidbody>().AddForce(Vector3.up * specialKB, ForceMode.Impulse);
+        }
+        Instantiate(specialVFX, transform.position, Quaternion.identity);
+
+        rb.velocity = Vector2.zero;
+        GetComponent<TrailRenderer>().emitting = false;
+
+        jumpInputDelay = 0f;
+
+        yield return new WaitForSeconds(0.1f); //lock controls to let anim finish
+        //Physics.IgnoreLayerCollision(6, 7, false);
+        attacking = false;
+    }
+
 
 
     public override IEnumerator Dash()
@@ -130,13 +209,13 @@ public class Player2 : PlayerController
         float elapsed = 0;
         while (elapsed < dashTime)
         {
-            rb.velocity = dashDir * dashForce * (-Mathf.Pow((elapsed/dashTime), 2) + 1);
+            rb.velocity = dashDir * dashForce * (-Mathf.Pow((elapsed / dashTime), 2) + 1);
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(new Vector3(dashDir.x, 0, dashDir.z)), rotationSpeed * Time.deltaTime);
 
             elapsed += Time.deltaTime;
             //if targeting ally, avoid passing them
             if (targetAlly && Vector3.Distance(ally.position, transform.position) < 0.5f)
-                elapsed += (dashTime-elapsed) * 0.1f;
+                elapsed += (dashTime - elapsed) * 0.1f;
             yield return null;
         }
         rb.velocity = Vector2.zero;

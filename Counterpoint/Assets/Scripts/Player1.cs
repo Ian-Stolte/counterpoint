@@ -10,12 +10,6 @@ public class Player1 : PlayerController
     [SerializeField] private float attackKB;
 
     [Header("Special")]
-    [SerializeField] private float specialTime;
-    [SerializeField] private float specialDashForce;
-    [SerializeField] private float specialKB;
-    [SerializeField] private int specialDmg;
-
-    [SerializeField] private GameObject specialVFX;
     [SerializeField] private GameObject specialHitbox;
     private Rigidbody draggedEnemy;
 
