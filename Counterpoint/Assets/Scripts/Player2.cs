@@ -23,7 +23,7 @@ public class Player2 : PlayerController
     public override IEnumerator Attack()
     {
         StartCoroutine(base.Attack());
-        //start animation
+        anim.Play("BasicAttack");
 
         //snap to nearby enemies, prioritizing ones in the direction we're facing
         Transform closestEnemy = SnapToEnemies(4);
@@ -36,7 +36,7 @@ public class Player2 : PlayerController
         float elapsed = 0;
         while (elapsed < 0.05f)
         {
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(new Vector3(attackDir.x, 0, attackDir.z)), rotationSpeed * 3f * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(new Vector3(attackDir.x, 0, attackDir.z)), rotSpeed * 3f * Time.deltaTime);
             elapsed += Time.deltaTime;
             yield return null;
         }
@@ -214,7 +214,7 @@ public class Player2 : PlayerController
         while (elapsed < dashTime)
         {
             rb.velocity = dashDir * dashForce * (-Mathf.Pow((elapsed / dashTime), 2) + 1);
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(new Vector3(dashDir.x, 0, dashDir.z)), rotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(new Vector3(dashDir.x, 0, dashDir.z)), rotSpeed * Time.deltaTime);
 
             elapsed += Time.deltaTime;
             //if targeting ally, avoid passing them

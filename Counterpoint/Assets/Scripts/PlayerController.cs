@@ -8,10 +8,12 @@ public class PlayerController : MonoBehaviour
 {
     private PlayerControls controls;
     protected Rigidbody rb;
+    protected Animator anim;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed;
-    [SerializeField] protected float rotationSpeed;
+    protected float slowFactor = 1;
+    [SerializeField] protected float rotSpeed;
     protected Vector3 moveDir;
 
     [Header("Ground Check")]
@@ -40,7 +42,9 @@ public class PlayerController : MonoBehaviour
     protected bool dashing;
     private Material baseMat;
     [SerializeField] private Material noDashMat;
+
     [SerializeField] private CanvasGroup dashIndicator;
+    [SerializeField] private MeshRenderer face;
 
     [Header("Targeting")]
     protected bool targetAlly;
@@ -74,10 +78,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] protected GameObject specialVFX;
 
 
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
-        baseMat = GetComponent<MeshRenderer>().material;
+        anim = transform.GetChild(0).GetComponent<Animator>();
+        baseMat = face.material;
     }
 
 
@@ -96,8 +102,8 @@ public class PlayerController : MonoBehaviour
         controls.Player.Attack.performed += ctx => AttackPressed();
         controls.Player.Attack.canceled += ctx => AttackReleased();
 
-        controls.Player.ToAlly.performed += ctx => TargetAlly(true);
-        controls.Player.ToAlly.canceled += ctx => TargetAlly(false);
+        controls.Player.LeftTrigger.performed += ctx => LeftTriggerPressed();
+        controls.Player.LeftTrigger.canceled += ctx => LeftTriggerReleased();
 
         controls.Player.Special.performed += ctx => SpecialPressed();
     }
@@ -108,7 +114,7 @@ public class PlayerController : MonoBehaviour
     /// MOVEMENT
     ///
 
-    private void Update()
+    protected void Update()
     {
         //Ground check
         Bounds b = groundCheck.GetComponent<SphereCollider>().bounds;
@@ -129,7 +135,7 @@ public class PlayerController : MonoBehaviour
         {
             StartCoroutine(Dash());
         }
-        transform.GetChild(0).GetComponent<MeshRenderer>().material = (dashDelay <= 0f) ? baseMat : noDashMat;
+        face.material = (dashDelay <= 0f) ? baseMat : noDashMat;
         dashIndicator.alpha = (dashDelay <= 0f) ? 1f : 0.2f;
 
 
@@ -192,11 +198,9 @@ public class PlayerController : MonoBehaviour
         //basic movement
         if (!attacking && !dashing)
         {
-            float speed = (charging) ? moveSpeed * 0.2f : moveSpeed;
-            rb.MovePosition(rb.position + moveDir * speed * Time.deltaTime);
+            rb.MovePosition(rb.position + moveDir * moveSpeed * slowFactor * Time.deltaTime);
             if (moveDir != Vector3.zero)
             {
-                float rotSpeed = (charging) ? rotationSpeed * 0.2f : moveSpeed;
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDir), rotSpeed * Time.deltaTime);
             }
         }
@@ -243,6 +247,8 @@ public class PlayerController : MonoBehaviour
     public virtual void StartAttackCharge() //actually start charge, including anim & chargeTimer
     {
         wantToCharge = false;
+        if (!charging)
+            slowFactor *= 0.2f;
         charging = true;
         chargeTimer = 0;
     }
@@ -251,6 +257,8 @@ public class PlayerController : MonoBehaviour
     {
         wantToCharge = false;
         attackInputDelay = 0.5f;
+        if (charging)
+            slowFactor /= 0.2f;
         charging = false;
     }
 
@@ -277,12 +285,15 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    public void TargetAlly(bool pressed)
+    /*public virtual void TargetAlly(bool pressed)
     {
         //TODO: show outline or other visual indicator, maybe turn to face ally (while remembering previous orientation)?
         if (ally != null)
             targetAlly = pressed;
-    }
+    }*/
+
+    public virtual void LeftTriggerPressed() { Debug.Log("Left Trigger pressed!"); }
+    public virtual void LeftTriggerReleased() { Debug.Log("Left Trigger pressed!"); }
 
 
 
