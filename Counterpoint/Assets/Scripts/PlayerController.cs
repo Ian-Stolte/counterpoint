@@ -179,9 +179,9 @@ public class PlayerController : MonoBehaviour
 
         //Apply gravity
         float gravity = (charging && chargeTimer < 1f) ? -2f : -9.8f; //less hang/down gravity if charging an attack
-        if (Mathf.Abs(rb.velocity.y) < hangPoint)
+        if (Mathf.Abs(rb.linearVelocity.y) < hangPoint)
             rb.AddForce(gravity * hangGravity * Vector3.up, ForceMode.Acceleration);
-        else if (rb.velocity.y < 0)
+        else if (rb.linearVelocity.y < 0)
             rb.AddForce(gravity * downGravity * Vector3.up, ForceMode.Acceleration);
         else
             rb.AddForce(-9.8f * upGravity * Vector3.up, ForceMode.Acceleration);
@@ -220,9 +220,9 @@ public class PlayerController : MonoBehaviour
     private void Jump()
     {
         if (grounded)
-            rb.velocity = new Vector3(rb.velocity.x, jumpPower, rb.velocity.z);
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpPower, rb.linearVelocity.z);
         else
-            rb.velocity = new Vector3(rb.velocity.x, jumpPower*0.8f, rb.velocity.z);
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpPower*0.8f, rb.linearVelocity.z);
     }
 
 
@@ -295,7 +295,7 @@ public class PlayerController : MonoBehaviour
     public virtual void LeftTriggerPressed() { Debug.Log("Left Trigger pressed!"); }
     public virtual void LeftTriggerReleased() { Debug.Log("Left Trigger pressed!"); }
 
-
+    
 
 
     ///

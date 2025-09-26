@@ -64,11 +64,11 @@ public class Player1 : PlayerController
             elapsed = 0;
             while (elapsed < 0.1f)
             {
-                rb.velocity = attackDir * dashForce / 2f * (-Mathf.Pow((elapsed / dashTime), 2) + 1);
+                rb.linearVelocity = attackDir * dashForce / 2f * (-Mathf.Pow((elapsed / dashTime), 2) + 1);
                 elapsed += Time.deltaTime;
                 yield return null;
             }
-            rb.velocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero;
         }
 
         Physics.IgnoreLayerCollision(6, 7, true); //ignore only self, not ally?
@@ -141,9 +141,9 @@ public class Player1 : PlayerController
         while (elapsed < specialTime)
         {
             Vector3 dashVel = attackDir * specialDashForce * (-Mathf.Pow((elapsed/specialTime), 2) + 1);
-            rb.velocity = dashVel;
+            rb.linearVelocity = dashVel;
             if (draggedEnemy != null)
-                draggedEnemy.velocity = dashVel;
+                draggedEnemy.linearVelocity = dashVel;
 
             //check for enemy to drag
             Bounds b = specialHitbox.GetComponent<BoxCollider>().bounds;
@@ -167,7 +167,7 @@ public class Player1 : PlayerController
                 if (draggedEnemy != null)
                 {
                     draggedEnemy.GetComponent<Enemy>().TakeDamage(specialDmg, 0.8f, 1, this);
-                    draggedEnemy.velocity = Vector2.zero;
+                    draggedEnemy.linearVelocity = Vector2.zero;
                     Vector3 kbDir = -attackDir + new Vector3(0, 0.3f, 0);
                     draggedEnemy.AddForce(kbDir * specialKB, ForceMode.Impulse);
                     //stun enemy
@@ -178,7 +178,7 @@ public class Player1 : PlayerController
             elapsed += Time.deltaTime;
             yield return null;
         }
-        rb.velocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
         GetComponent<TrailRenderer>().emitting = false;
 
         yield return new WaitForSeconds(0.1f); //lock controls to let anim finish
@@ -211,7 +211,7 @@ public class Player1 : PlayerController
         float elapsed = 0;
         while (elapsed < dashTime)
         {
-            rb.velocity = dashDir * dashForce * (-Mathf.Pow((elapsed/dashTime), 2) + 1);
+            rb.linearVelocity = dashDir * dashForce * (-Mathf.Pow((elapsed/dashTime), 2) + 1);
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(new Vector3(dashDir.x, 0, dashDir.z)), rotSpeed * Time.deltaTime);
 
             elapsed += Time.deltaTime;
@@ -220,7 +220,7 @@ public class Player1 : PlayerController
                 elapsed += (dashTime-elapsed) * 0.1f;
             yield return null;
         }
-        rb.velocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
 
         GetComponent<TrailRenderer>().emitting = false;
         //Physics.IgnoreLayerCollision(6, 7, false);

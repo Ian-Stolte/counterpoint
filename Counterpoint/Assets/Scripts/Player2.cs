@@ -52,11 +52,11 @@ public class Player2 : PlayerController
             elapsed = 0;
             while (elapsed < 0.1f)
             {
-                rb.velocity = attackDir * dashForce / 2f * (-Mathf.Pow((elapsed / dashTime), 2) + 1);
+                rb.linearVelocity = attackDir * dashForce / 2f * (-Mathf.Pow((elapsed / dashTime), 2) + 1);
                 elapsed += Time.deltaTime;
                 yield return null;
             }
-            rb.velocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero;
         }
 
         Physics.IgnoreLayerCollision(6, 7, true); //ignore only self, not ally?
@@ -98,7 +98,7 @@ public class Player2 : PlayerController
             while (elapsed < waitTime)
             {
                 float quadFactor = (Mathf.Pow((elapsed/waitTime), 2) + 0.5f);
-                rb.velocity = new Vector3(rb.velocity.x, quadFactor, rb.velocity.z);
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, quadFactor, rb.linearVelocity.z);
                 elapsed += Time.deltaTime;
                 yield return null;
             }
@@ -145,11 +145,11 @@ public class Player2 : PlayerController
         {
             //float quadFactor = (elapsed < 0.2f) ? Mathf.Pow(elapsed / 0.2f, 2) : 1;
             Vector3 plungeDir = (dashDir / 3f + Vector3.down) * specialDashForce;
-            rb.velocity = plungeDir;
+            rb.linearVelocity = plungeDir;
             foreach (Rigidbody r in draggedEnemies)
             {
                 r.MovePosition(r.position + new Vector3(0, rb.position.y - r.position.y, 0) * 10 * Time.deltaTime); //pull enemies toward you vertically
-                r.velocity = plungeDir;
+                r.linearVelocity = plungeDir;
             }
 
             //check for enemies to drag
@@ -171,14 +171,14 @@ public class Player2 : PlayerController
         foreach (Collider hit in finalHits)
         {
             hit.GetComponent<Enemy>().TakeDamage(specialDmg, 0.5f, 2, this);
-            hit.GetComponent<Rigidbody>().velocity = Vector2.zero;
+            hit.GetComponent<Rigidbody>().linearVelocity = Vector2.zero;
             //Vector3 kbDir = (hit.transform.position - transform.position).normalized;
             //kbDir.y = 1.5f;
             hit.GetComponent<Rigidbody>().AddForce(Vector3.up * specialKB, ForceMode.Impulse);
         }
         Instantiate(specialVFX, transform.position, Quaternion.identity);
 
-        rb.velocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
         GetComponent<TrailRenderer>().emitting = false;
 
         jumpInputDelay = 0f;
@@ -213,7 +213,7 @@ public class Player2 : PlayerController
         float elapsed = 0;
         while (elapsed < dashTime)
         {
-            rb.velocity = dashDir * dashForce * (-Mathf.Pow((elapsed / dashTime), 2) + 1);
+            rb.linearVelocity = dashDir * dashForce * (-Mathf.Pow((elapsed / dashTime), 2) + 1);
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(new Vector3(dashDir.x, 0, dashDir.z)), rotSpeed * Time.deltaTime);
 
             elapsed += Time.deltaTime;
@@ -222,7 +222,7 @@ public class Player2 : PlayerController
                 elapsed += (dashTime - elapsed) * 0.1f;
             yield return null;
         }
-        rb.velocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
 
         GetComponent<TrailRenderer>().emitting = false;
         Physics.IgnoreLayerCollision(6, 7, false);

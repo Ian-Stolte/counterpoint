@@ -57,17 +57,17 @@ public class Enemy : MonoBehaviour
         Bounds b = groundCheck.GetComponent<SphereCollider>().bounds;
         grounded = (Physics.CheckSphere(b.center, 0.5f, LayerMask.GetMask("Ground")));
 
-        if (Mathf.Abs(rb.velocity.y) < hangPoint)
+        if (Mathf.Abs(rb.linearVelocity.y) < hangPoint)
             rb.AddForce(-9.8f * hangGravity * Vector3.up, ForceMode.Acceleration);
-        else if (rb.velocity.y < 0)
+        else if (rb.linearVelocity.y < 0)
             rb.AddForce(-9.8f * downGravity * Vector3.up, ForceMode.Acceleration);
         else
             rb.AddForce(-9.8f * upGravity * Vector3.up, ForceMode.Acceleration);
 
         //Control rb knockback
-        if (rb.velocity.magnitude < 3f)
+        if (rb.linearVelocity.magnitude < 3f)
         {
-            rb.velocity = new Vector3(rb.velocity.x*0.8f, rb.velocity.y, rb.velocity.z*0.8f);
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x*0.8f, rb.linearVelocity.y, rb.linearVelocity.z*0.8f);
         }
 
         //Show stun
